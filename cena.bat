@@ -1,0 +1,2 @@
+"D:\PROGRAMY\PyCharm Community Edition 2018.3\PycharmProjects\LittleProjects\venv\Scripts\python.exe" "D:/PROGRAMY/PyCharm Community Edition 2018.3/PycharmProjects/LittleProjects/Cena Madery/cena_madery.py"
+pause
