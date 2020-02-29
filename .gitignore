@@ -123,3 +123,28 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.idea/encodings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/workspace.xml
+Ceny Opon/.idea/CenyOpon.iml
+Ceny Opon/.idea/inspectionProfiles/profiles_settings.xml
+Ceny Opon/.idea/modules.xml
+Ceny Opon/MotoBudrex_STOCK_KROPEK.xlsx
+RestAPI_Allegro_sandbox/.idea/inspectionProfiles/profiles_settings.xml
+RestAPI_Allegro_sandbox/.idea/misc.xml
+RestAPI_Allegro_sandbox/.idea/RestAllegro.iml
+RestAPI_Allegro_sandbox/.idea/modules.xml
+RestAPI_Allegro_sandbox/.idea/vcs.xml
+RestAPI_Allegro_sandbox/credentials.py
+Ceny Opon/.idea/workspace.xml
+Ceny Opon/.idea/misc.xml
+Ceny Opon v2/.idea/Ceny Opon v2.iml
+Ceny Opon v2/.idea/inspectionProfiles/profiles_settings.xml
+Ceny Opon v2/.idea/misc.xml
+Ceny Opon v2/.idea/modules.xml
+Ceny Opon v2/.idea/vcs.xml
+Ceny Opon v2/Lista_aukcji_zamowienia_informacje.xlsx
+Ceny Opon v2/~$Lista_aukcji_zamowienia_informacje.xlsx
