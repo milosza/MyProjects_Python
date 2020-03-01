@@ -9,7 +9,7 @@ from random import randint
 while True:
     try:
         # adres strony
-        url_tui1 = 'https://www.tui.pl/wypoczynek/portugalia/madera/dorisol-florasol-residence-fnc11036/OfferCodeWS/WROFNC20200915050020200915202009222140L07FNC11036STX1GA02'
+        url_tui1 = 'https://www.tui.pl/wypoczynek/portugalia/madera/dorisol-florasol-residence-fnc11036/OfferCodeWS/WROFNC20200901044020200901202009082145L07FNC11036STX1GA02'
         # ścieżka XPATH dla ceny
         xpath_cena = '//*[@id="content"]/main/div[1]/div/div[1]/div[1]/div[1]/div/div[3]/div[1]/div[2]/div/div/span/text()'
 

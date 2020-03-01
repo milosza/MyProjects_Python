@@ -2,36 +2,41 @@
 
 import requests
 from lxml import html
-import re
 import openpyxl
+import time
+from random import randint
 
 filename_read = 'Lista_aukcji_zamowienia_informacje.XLSX'
 filename_write = 'Lista_aukcji_zamowienia_informacje_updated.XLSX'
 col_start = 5
 col_stop = 5
-row_start = 2
-row_stop = 120
+row_start = 69
+row_stop = 72
 opony = []
 ceny = []
-ceny_temp = []
-ilosci = []
-ilosci_temp = []
 popularnosc = []
-popularnosc_temp = []
+
+# pobieranie wszystkich opon z pliku,
+# wyszukiwanie wszystkich opon na allegro jedna po drugiej i zapisywanie do pamieci,
+# zapisywanie wszystkiego do pliku,
+# w przypadku bledu zapisanie biezacej zawartosci pamieci do pliku
 
 #reading form xls
 def read_xls(filename_read):
     global opony
+    i = 1
     print("Otwieram plik", filename_read)
     wb = openpyxl.load_workbook(filename=filename_read)
     ws = wb.active
     for col in ws.iter_cols(min_col=col_start, max_col=col_stop, min_row=row_start, max_row=row_stop):
         for cell in col:
-            print(cell.value)
+            print(i, cell.value)
             opony.append(cell.value)
+            i=+1
     print(opony)
     wb.close()
     return opony
+
 
 def allegropl_price_check(opony):
     global ceny
@@ -54,8 +59,15 @@ def allegropl_price_check(opony):
         tree = html.fromstring(page.content)
 
         # tworzenie listy ile osob kupilo
-        popularnosc_temp.append(tree.xpath('//span[@class ="_9c44d_2o04k"]/text()'))
+        # oferty promowane //div/section[2]/section//span[@class="_9c44d_2o04k"]/text()
+        # oferty regularne //div/section[3]/section//span[@class="_9c44d_2o04k"]/text()
+
+        # oferty promowane
+        print(tree.xpath('//div/section[2]/section//span[@class="_9c44d_2o04k"]/text()'))
+        popularnosc_temp.append(tree.xpath('//div/section[2]/section//span[@class="_9c44d_2o04k"]/text()'))
+        print(popularnosc_temp)
         popularnosc_temp = sum(popularnosc_temp, [])
+        print(popularnosc_temp)
         popularnosc_temp = [popular.replace(' osoba kupiła', '') for popular in popularnosc_temp]
         popularnosc_temp = [popular.replace(' osoby kupiły', '') for popular in popularnosc_temp]
         popularnosc_temp = [popular.replace(' osób kupiło', '') for popular in popularnosc_temp]
@@ -68,9 +80,13 @@ def allegropl_price_check(opony):
         print("Ilosc kupionych: "+str(popularnosc_temp))
         popularnosc.append(popularnosc_temp)
         popularnosc_temp = []
+        print(popularnosc)
 
         # tworzenie listy cen
-        ceny_temp.append(tree.xpath('//span[@class="_9c44d_1zemI"]/text()'))
+        # oferty promowane //div/section[2]/section//span[@class="_9c44d_1zemI"]/text()
+        # oferty regularne //div/section[3]/section//span[@class="_9c44d_1zemI"]/text()
+
+        ceny_temp.append(tree.xpath('//div/section[2]/section//span[@class="_9c44d_1zemI"]/text()'))
         ceny_temp = sum(ceny_temp, [])
         if not ceny_temp:
             ceny_temp = '0'
@@ -79,7 +95,9 @@ def allegropl_price_check(opony):
         print("Cena minimalna: "+str(min(ceny_temp)))
         ceny.append(min(ceny_temp))
         ceny_temp = []
-    return (ilosci, popularnosc, ceny)
+        print(ceny)
+    return (popularnosc, ceny)
+
 
 #wrtie lists to xls
 def write_xls(filename_write):
@@ -97,8 +115,20 @@ def write_xls(filename_write):
         ws['V' + str(i)] = n
         i = i + 1
     wb.save(filename_write)
+    wb.close()
     print("OK")
 
-read_xls(filename_read)
-allegropl_price_check(opony)
-write_xls(filename_write)
+try:
+    read_xls(filename_read)
+    try:
+        allegropl_price_check(opony)
+    except Exception as error:
+        # w przypadku błędu, wypisuje błąd
+        print(time.ctime(time.time()), ' ', error)
+        write_xls(filename_write)
+    write_xls(filename_write)
+except Exception as error:
+    # w przypadku błędu, wypisuje błąd
+    print(time.ctime(time.time()),' ', error)
+else:
+    pass
