@@ -155,6 +155,6 @@ except Exception as error:
     # w przypadku błędu, wypisuje błąd
     print('=== ERROR', time.ctime(time.time()), error)
     # zamykam przegladarke
-    browser.quit(
+    browser.quit()
     file.close()
 
