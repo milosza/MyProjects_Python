@@ -8,13 +8,21 @@ from random import randint
 
 filename_read = 'Lista_aukcji_zamowienia_informacje.XLSX'
 filename_write = 'Lista_aukcji_zamowienia_informacje_updated.XLSX'
-col_start = 5
-col_stop = 5
-row_start = 69
-row_stop = 72
+row_start = 2
+row_stop = 120
+
+col_start = 1
+col_stop = 1
 opony = []
-ceny = []
-popularnosc = []
+prom_popularnosc = []
+prom_cena_min = []
+prom_cena_dost = []
+prom_cena_max = {}
+regular_popularnosc = []
+regular_cena_min = []
+regular_cena_dost = []
+regular_cena_max = {}
+
 
 # pobieranie wszystkich opon z pliku,
 # wyszukiwanie wszystkich opon na allegro jedna po drugiej i zapisywanie do pamieci,
@@ -23,7 +31,7 @@ popularnosc = []
 
 #reading form xls
 def read_xls(filename_read):
-    global opony
+   # global opony
     i = 1
     print("Otwieram plik", filename_read)
     wb = openpyxl.load_workbook(filename=filename_read)
@@ -32,87 +40,192 @@ def read_xls(filename_read):
         for cell in col:
             print(i, cell.value)
             opony.append(cell.value)
-            i=+1
-    print(opony)
+            i = i+1
     wb.close()
     return opony
 
 
 def allegropl_price_check(opony):
-    global ceny
-    ceny_temp = []
-    global popularnosc
+    cena_min_temp = []
+    cena_dost_temp = []
+    cena_max_temp = {}
     popularnosc_temp = []
     for i in range(len(opony)):
-        print("Sprawdzanie cen "+ str(i+1) +" z "+ str(len(opony)) +": "+ str(opony[i]))
+        print("Sprawdzanie cen "+ str(i+1) + " z " + str(len(opony)) + ": " + str(opony[i]))
         # pobranie zawartosci strony
         
         # wyszukiwanie przez wyszukiwarkę allegro
         # page = requests.get("https://allegro.pl/listing?string="+nagrody[i]+"&order=d")
-        
         # opony, komplet
         page = requests.get("https://allegro.pl/kategoria/opony-do-samochodow-osobowych-257688?liczba-opon-w-ofercie=Komplet%204%20szt.&string="+opony[i]+"&order=qd&bmatch=baseline-cl-dict43-aut-1-4-1127&stan=nowe")
-
         # opony, dwie sztuki
         # page = requests.get("https://allegro.pl/kategoria/opony-do-samochodow-osobowych-257688?liczba-opon-w-ofercie=2%20szt.&string="+opony[i]+"&order=qd&bmatch=baseline-cl-dict43-aut-1-4-1127&stan=nowe")
 
         tree = html.fromstring(page.content)
 
-        # tworzenie listy ile osob kupilo
-        # oferty promowane //div/section[2]/section//span[@class="_9c44d_2o04k"]/text()
-        # oferty regularne //div/section[3]/section//span[@class="_9c44d_2o04k"]/text()
+        # tworzenie listy popularnosci - promowane
+        try:
+            popularnosc_temp.append(tree.xpath('//div/section[2]/section//span[@class="_9c44d_2o04k"]/text()'))
+            popularnosc_temp = sum(popularnosc_temp, [])
+            popularnosc_temp = [popular.replace(' osoba kupiła', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osoby kupiły', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osób kupiło', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osoba licytuje', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osoby licytują', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osób licytuje', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace('nikt nie licytuje', '0') for popular in popularnosc_temp]
+            popularnosc_temp = [int(popular) for popular in popularnosc_temp]
+            print("-- OFERTY PROMOWANE")
+            #popularnosc_temp = sum(popularnosc_temp)
+            print("Ilosc kupionych: "+str(sum(popularnosc_temp)))
+            prom_popularnosc.append(sum(popularnosc_temp))
+            popularnosc_temp.clear()
+        except Exception as error:
+            print(time.ctime(time.time()), error)
+            prom_popularnosc.append(str(error))
+            pass
 
-        # oferty promowane
-        print(tree.xpath('//div/section[2]/section//span[@class="_9c44d_2o04k"]/text()'))
-        popularnosc_temp.append(tree.xpath('//div/section[2]/section//span[@class="_9c44d_2o04k"]/text()'))
-        print(popularnosc_temp)
-        popularnosc_temp = sum(popularnosc_temp, [])
-        print(popularnosc_temp)
-        popularnosc_temp = [popular.replace(' osoba kupiła', '') for popular in popularnosc_temp]
-        popularnosc_temp = [popular.replace(' osoby kupiły', '') for popular in popularnosc_temp]
-        popularnosc_temp = [popular.replace(' osób kupiło', '') for popular in popularnosc_temp]
-        popularnosc_temp = [popular.replace(' osoba licytuje', '') for popular in popularnosc_temp]
-        popularnosc_temp = [popular.replace(' osoby licytują', '') for popular in popularnosc_temp]
-        popularnosc_temp = [popular.replace(' osób licytuje', '') for popular in popularnosc_temp]
-        popularnosc_temp = [popular.replace('nikt nie licytuje', '0') for popular in popularnosc_temp]
-        popularnosc_temp = [int(popular) for popular in popularnosc_temp]
-        popularnosc_temp = sum(popularnosc_temp)
-        print("Ilosc kupionych: "+str(popularnosc_temp))
-        popularnosc.append(popularnosc_temp)
-        popularnosc_temp = []
-        print(popularnosc)
+        # tworzenie listy cen minimalnych - promowane
+        try:
+            cena_min_temp.append(tree.xpath('//div/section[2]/section//span[@class="_9c44d_1zemI"]/text()'))
+            cena_min_temp= sum(cena_min_temp, [])
+            if not cena_min_temp:
+                cena_min_temp = '0'
+            cena_min_temp = [cena.replace(' ', '') for cena in cena_min_temp]
+            cena_min_temp = [int(cena) for cena in cena_min_temp]
+            print("Cena minimalna: "+str(min(cena_min_temp)))
+            prom_cena_min.append(min(cena_min_temp))
+            cena_min_temp.clear()
+        except Exception as error:
+            print(time.ctime(time.time()), error)
+            prom_cena_min.append(str(error))
+            pass
 
-        # tworzenie listy cen
-        # oferty promowane //div/section[2]/section//span[@class="_9c44d_1zemI"]/text()
-        # oferty regularne //div/section[3]/section//span[@class="_9c44d_1zemI"]/text()
+        # tworzenie listy cen z dostawą - promowane
+        try:
+            cena_dost_temp.append(tree.xpath('//div/section[2]//span[@class="_9c44d_1zemI"]/text()|//div/section[2]//div[@class="_9c44d_1xKGX"]//i/text()'))
+            cena_dost_temp = sum(cena_dost_temp, [])
+            for j in range(len(cena_dost_temp)):
+                if 'zł' in cena_dost_temp[j]:
+                    k = j - 1
+                    cena_dost_temp.pop(k)
+                    cena_dost_temp.append('usuniety')
+            cena_dost_temp = [cena for cena in cena_dost_temp if not ' z dostawą' in cena]
+            cena_dost_temp = [cena for cena in cena_dost_temp if not 'darmowa' in cena]
+            cena_dost_temp = [cena for cena in cena_dost_temp if not 'dostawa' in cena]
+            cena_dost_temp = [cena for cena in cena_dost_temp if not 'usuniety' in cena]
+            cena_dost_temp = [cena[:-6] if 'zł' in cena else cena for cena in cena_dost_temp]
+            cena_dost_temp = [cena.replace(' ', '') for cena in cena_dost_temp]
+            cena_dost_temp = [int(cena) for cena in cena_dost_temp]
+            print("Cena z dostawą: "+str(min(cena_dost_temp)))
+            prom_cena_dost.append(min(cena_dost_temp))
+            cena_dost_temp.clear()
+        except Exception as error:
+            print(time.ctime(time.time()), error)
+            prom_cena_dost.append(str(error))
+            pass
 
-        ceny_temp.append(tree.xpath('//div/section[2]/section//span[@class="_9c44d_1zemI"]/text()'))
-        ceny_temp = sum(ceny_temp, [])
-        if not ceny_temp:
-            ceny_temp = '0'
-        ceny_temp = [cena.replace(' ', '') for cena in ceny_temp]
-        ceny_temp = [int(cena) for cena in ceny_temp]
-        print("Cena minimalna: "+str(min(ceny_temp)))
-        ceny.append(min(ceny_temp))
-        ceny_temp = []
-        print(ceny)
-    return (popularnosc, ceny)
+        # # tworzenie listy cen max dla popularnosci >2 - promowane
+        # cena_max_temp = dict(zip(cena_dost_temp, popularnosc_temp))
+        # print(cena_max_temp)
 
+        # tworzenie listy popularnosci - regularne
+        try:
+            popularnosc_temp.append(tree.xpath('//div/section[3]/section//span[@class="_9c44d_2o04k"]/text()'))
+            popularnosc_temp = sum(popularnosc_temp, [])
+            popularnosc_temp = [popular.replace(' osoba kupiła', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osoby kupiły', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osób kupiło', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osoba licytuje', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osoby licytują', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace(' osób licytuje', '') for popular in popularnosc_temp]
+            popularnosc_temp = [popular.replace('nikt nie licytuje', '0') for popular in popularnosc_temp]
+            popularnosc_temp = [int(popular) for popular in popularnosc_temp]
+            print("-- OFERTY REGULARNE")
+            #popularnosc_temp = sum(popularnosc_temp)
+            print("Ilosc kupionych: "+str(sum(popularnosc_temp)))
+            regular_popularnosc.append(sum(popularnosc_temp))
+            popularnosc_temp.clear()
+        except Exception as error:
+            print(time.ctime(time.time()), error)
+            regular_popularnosc(str(error))
+            pass
+
+        # tworzenie listy cen minimalnych - regularne
+        try:
+            cena_min_temp.append(tree.xpath('//div/section[3]/section//span[@class="_9c44d_1zemI"]/text()'))
+            cena_min_temp= sum(cena_min_temp, [])
+            if not cena_min_temp:
+                cena_min_temp = '0'
+            cena_min_temp = [cena.replace(' ', '') for cena in cena_min_temp]
+            cena_min_temp = [int(cena) for cena in cena_min_temp]
+            print("Cena minimalna: "+str(min(cena_min_temp)))
+            regular_cena_min.append(min(cena_min_temp))
+            cena_min_temp.clear()
+        except Exception as error:
+            print(time.ctime(time.time()), error)
+            regular_cena_min.append(str(error))
+            pass
+
+        # tworzenie listy cen z dostawą - regularne
+        try:
+            cena_dost_temp.append(tree.xpath('//div/section[3]/section//span[@class="_9c44d_1zemI"]/text()|//div/section[3]//div[@class="_9c44d_1xKGX"]//i/text()'))
+            cena_dost_temp = sum(cena_dost_temp, [])
+            for j in range(len(cena_dost_temp)):
+                if 'zł' in cena_dost_temp[j]:
+                    k = j - 1
+                    cena_dost_temp.pop(k)
+                    cena_dost_temp.append('usuniety')
+            cena_dost_temp = [cena for cena in cena_dost_temp if not ' z dostawą' in cena]
+            cena_dost_temp = [cena for cena in cena_dost_temp if not 'darmowa' in cena]
+            cena_dost_temp = [cena for cena in cena_dost_temp if not 'dostawa' in cena]
+            cena_dost_temp = [cena for cena in cena_dost_temp if not 'usuniety' in cena]
+            cena_dost_temp = [cena[:-6] if 'zł' in cena else cena for cena in cena_dost_temp]
+            cena_dost_temp = [cena.replace(' ', '') for cena in cena_dost_temp]
+            cena_dost_temp = [int(cena) for cena in cena_dost_temp]
+            print("Cena z dostawą: "+str(min(cena_dost_temp)))
+            regular_cena_dost.append(min(cena_dost_temp))
+            cena_dost_temp.clear()
+        except Exception as error:
+            print(time.ctime(time.time()), error)
+            regular_cena_dost.append(str(error))
+            pass
+    return (prom_popularnosc, prom_cena_min, prom_cena_dost, regular_popularnosc, regular_cena_min, regular_cena_dost)
 
 #wrtie lists to xls
 def write_xls(filename_write):
     print("Zapisuję do xls...")
     wb = openpyxl.load_workbook(filename=filename_read)
     ws = wb.active
-    ws['U1'] = "Ilosc kupionych"
-    ws['V1'] = "Cena min"
+    ws['L1'] = "Promowane - popularnosc"
+    ws['M1'] = "Promowane - cena min"
+    ws['N1'] = "Promowane - cena z dostawa"
+    ws['W1'] = "Regularne - popularnosc"
+    ws['X1'] = "Regularne - cena min"
+    ws['Y1'] = "Regularne - cena z dostawa"
     i = row_start
-    for n in popularnosc:
-        ws['U' + str(i)] = n
+    for n in prom_popularnosc:
+        ws['L' + str(i)] = n
         i = i + 1
     i = row_start
-    for n in ceny:
-        ws['V' + str(i)] = n
+    for n in prom_cena_min:
+        ws['M' + str(i)] = n
+        i = i + 1
+    i = row_start
+    for n in prom_cena_dost:
+        ws['N' + str(i)] = n
+        i = i + 1
+    i = row_start
+    for n in regular_popularnosc:
+        ws['W' + str(i)] = n
+        i = i + 1
+    i = row_start
+    for n in regular_cena_min:
+        ws['X' + str(i)] = n
+        i = i + 1
+    i = row_start
+    for n in regular_cena_dost:
+        ws['Y' + str(i)] = n
         i = i + 1
     wb.save(filename_write)
     wb.close()
@@ -123,12 +236,9 @@ try:
     try:
         allegropl_price_check(opony)
     except Exception as error:
-        # w przypadku błędu, wypisuje błąd
-        print(time.ctime(time.time()), ' ', error)
-        write_xls(filename_write)
+        print(time.ctime(time.time()), error)
+        pass
     write_xls(filename_write)
 except Exception as error:
-    # w przypadku błędu, wypisuje błąd
-    print(time.ctime(time.time()),' ', error)
-else:
-    pass
+    print(time.ctime(time.time()), error)
+
