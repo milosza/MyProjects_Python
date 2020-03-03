@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+import re
 import openpyxl
 
 # URL
@@ -16,6 +17,7 @@ xpath_login_input = '//input[@id="ctLogin_usrName"]'
 xpath_password_input = '//input[@id="ctLogin_pass"]'
 xpath_login_button = '//a[@id="ctLogin_lnkSubm"]'
 xpath_search_size_input = '//input[@id="searchCode"]'
+xpath_search_season_select = '//select[@id="_ctProductSearch_StandardSearchV2CT_ddlSsn"]'
 xpath_sort_by_size_select = '//select[@id="listSett_ddltMps"]/option[4]'
 xpath_50results_per_page_button = '//a[@id="listSett_lnkPrPg3"]/@href'
 xpath_product_name = '//span[@class="pricesButton"]/text()'
@@ -32,7 +34,7 @@ tyres_size = []
 tyres = []
 prices = []
 i = 1
-timeout = 60
+timeout = 90
 browser = webdriver.Firefox()
 wait = WebDriverWait(browser, timeout)
 file = None
@@ -53,9 +55,16 @@ try:
 
     # przygotowywanie strony do parsowania
     print("Searching...")
+    search_season_select = browser.find_element_by_xpath(xpath_search_season_select+'/option[4]')
+    # letnie '/option[1]'
+    # zimowe '/option[2]'
+    # caloroczne '/option[3]'
+    # wszystkie '/option[4]'
+    search_season_select.click()
+
     search_size_input = browser.find_element_by_xpath(xpath_search_size_input)
     search_size_input.clear()
-    #search_size_input.send_keys("205/55R16")
+    search_size_input.send_keys("205/55R16")
     search_size_input.send_keys(Keys.RETURN)
     time.sleep(1)
     loader_invisible = wait.until(ec.invisibility_of_element_located((By.XPATH, xpath_loader)))
@@ -91,10 +100,13 @@ try:
             tyres_name.append(parsing.xpath(xpath_product_name))
             tyres_name = sum(tyres_name, [])
             tyres_name = [name.replace('\n        ', '') for name in tyres_name]
+
             tyres_size.append(parsing.xpath(xpath_product_size))
             tyres_size = sum(tyres_size, [])
-            tyres_size = [cena[:12]+cena[13] for cena in tyres_size]
-            tyres_size = [size.replace('\n        ', '') for size in tyres_size]
+            tyres_size = [re.findall("\w+/\w+R\w+\s\w+\s\w+", size) for size in tyres_size]
+            tyres_size = sum(tyres_size, [])
+            tyres_size = [size[:-2] + size[-1:] for size in tyres_size]
+
             tyres = [name+size for name,size in zip(tyres_name,tyres_size)]
             print(len(tyres), tyres)
 
