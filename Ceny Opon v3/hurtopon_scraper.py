@@ -66,7 +66,7 @@ try:
 
     search_size_input = browser.find_element_by_xpath(xpath_search_size_input)
     search_size_input.clear()
-    search_size_input.send_keys("205/55R16")
+    # search_size_input.send_keys("205/55R16")
     search_size_input.send_keys(Keys.RETURN)
     time.sleep(1)
     loader_invisible = wait.until(ec.invisibility_of_element_located((By.XPATH, xpath_loader)))

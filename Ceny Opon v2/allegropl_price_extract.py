@@ -197,35 +197,35 @@ def write_xls(filename_write):
     print("Zapisuję do xls...")
     wb = openpyxl.load_workbook(filename=filename_read)
     ws = wb.active
-    ws['L1'] = "Promowane - popularnosc"
-    ws['M1'] = "Promowane - cena min"
-    ws['N1'] = "Promowane - cena z dostawa"
-    ws['W1'] = "Regularne - popularnosc"
-    ws['X1'] = "Regularne - cena min"
-    ws['Y1'] = "Regularne - cena z dostawa"
+    ws['M1'] = "Promowane - popularnosc"
+    ws['N1'] = "Promowane - cena min"
+    ws['O1'] = "Promowane - cena z dostawa"
+    ws['X1'] = "Regularne - popularnosc"
+    ws['Y1'] = "Regularne - cena min"
+    ws['Z1'] = "Regularne - cena z dostawa"
     i = row_start
     for n in prom_popularnosc:
-        ws['L' + str(i)] = n
-        i = i + 1
-    i = row_start
-    for n in prom_cena_min:
         ws['M' + str(i)] = n
         i = i + 1
     i = row_start
-    for n in prom_cena_dost:
+    for n in prom_cena_min:
         ws['N' + str(i)] = n
         i = i + 1
     i = row_start
-    for n in regular_popularnosc:
-        ws['W' + str(i)] = n
+    for n in prom_cena_dost:
+        ws['O' + str(i)] = n
         i = i + 1
     i = row_start
-    for n in regular_cena_min:
+    for n in regular_popularnosc:
         ws['X' + str(i)] = n
         i = i + 1
     i = row_start
-    for n in regular_cena_dost:
+    for n in regular_cena_min:
         ws['Y' + str(i)] = n
+        i = i + 1
+    i = row_start
+    for n in regular_cena_dost:
+        ws['Z' + str(i)] = n
         i = i + 1
     wb.save(filename_write)
     wb.close()
