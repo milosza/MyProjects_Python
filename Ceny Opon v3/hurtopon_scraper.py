@@ -22,6 +22,7 @@ xpath_sort_by_size_select = '//select[@id="listSett_ddltMps"]/option[4]'
 xpath_50results_per_page_button = '//a[@id="listSett_lnkPrPg3"]/@href'
 xpath_product_name = '//span[@class="pricesButton"]/text()'
 xpath_product_size = '//div[@class="size"]/text()'
+xpath_product_link = '//a[@class="hidden pricesButton"]'
 xpath_product_price = '//div[@class="cenaNet"]/span[@class="ct"]/text()'
 xpath_next_page_button = '//span[@id="p_1pgtn"]'
 xpath_pages_togo = '//div[@id="listSett_upPagerUp"]/strong/text()'
@@ -32,6 +33,7 @@ pages_togo = []
 tyres_name = []
 tyres_size = []
 tyres = []
+links = []
 prices = []
 i = 1
 timeout = 90
@@ -81,7 +83,6 @@ try:
     page_content = browser.page_source
     parsing = html.fromstring(page_content)
     pages_togo.append(parsing.xpath(xpath_pages_togo))
-    print(pages_togo)
     pages_togo = sum(pages_togo, [])
     pages_togo = [number.replace(' z ', '') for number in pages_togo]
     pages = ''.join(pages_togo)
@@ -110,6 +111,10 @@ try:
             tyres = [name+size for name,size in zip(tyres_name,tyres_size)]
             print(len(tyres), tyres)
 
+            links = browser.find_elements_by_xpath(xpath_product_link)
+            links = [link.get_attribute('href') for link in links]
+            print(len(links), links)
+
             prices.append(parsing.xpath(xpath_product_price))
             prices = sum(prices, [])
             prices = [price.replace('od ', '') for price in prices]
@@ -135,7 +140,7 @@ try:
             print("Writing xlsx...")
             sheet = file.active
             for row in range(len(tyres)):
-                sheet.append([tyres[row], prices[row]])
+                sheet.append([tyres[row], links[row], prices[row]])
             try:
                 file.save('.\hurtopon.xlsx')
             except Exception as error:
