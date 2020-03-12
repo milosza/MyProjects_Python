@@ -122,6 +122,7 @@ try:
 
             i=i+1
             if len(tyres) >= 10:
+                browser.save_screenshot('.\error.png')
                 break
             print("Parsing success!")
 
@@ -153,6 +154,7 @@ try:
         else:
             print('Data mismatch')
             print(len(tyres), '!=', len(prices))
+            browser.save_screenshot('.\error.png')
 
         # przechodzenie na kolejna stronę
         print('Next page...')
@@ -171,6 +173,7 @@ try:
 except Exception as error:
     # w przypadku błędu, wypisuje błąd
     print('=== ERROR', time.ctime(time.time()), error)
+    browser.save_screenshot('.\error.png')
     # zamykam przegladarke
     browser.quit()
     file.close()
