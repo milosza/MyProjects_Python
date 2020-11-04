@@ -18,7 +18,7 @@ xpath_password_input = '//input[@id="ctLogin_pass"]'
 xpath_login_button = '//a[@id="ctLogin_lnkSubm"]'
 xpath_search_size_input = '//input[@id="searchCode"]'
 xpath_search_season_select = '//select[@id="_ctProductSearch_StandardSearchV2CT_ddlSsn"]'
-xpath_sort_by_size_select = '//select[@id="listSett_ddltMps"]/option[4]'
+xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[4]'
 xpath_50results_per_page_button = '//a[@id="listSett_lnkPrPg3"]/@href'
 xpath_product_name = '//span[@class="pricesButton"]/text()'
 xpath_product_size = '//div[@class="size"]/text()'
@@ -37,15 +37,50 @@ links = []
 prices = []
 i = 1
 timeout = 90
-browser = webdriver.Firefox()
-wait = WebDriverWait(browser, timeout)
 file = None
 
+print("hurtopon.pl scraper v.1.1.20200529 \n")
+print("Podaj parametry opon do importu")
+
+while True:
+    wybor = input("Sezon (1 - letnie, 2 - zimowe, 3 - całoroczne, 4 - wszystkie):")
+    if wybor == '1':
+        xpath_search_season_select = '//select[@id="_ctProductSearch_StandardSearchV2CT_ddlSsn"]/option[1]'
+    elif wybor == '2':
+        xpath_search_season_select = '//select[@id="_ctProductSearch_StandardSearchV2CT_ddlSsn"]/option[2]'
+    elif wybor == '3':
+        xpath_search_season_select = '//select[@id="_ctProductSearch_StandardSearchV2CT_ddlSsn"]/option[3]'
+    elif wybor == '4':
+        xpath_search_season_select = '//select[@id="_ctProductSearch_StandardSearchV2CT_ddlSsn"]/option[4]'
+    else:
+        continue
+    break
+
+while True:
+    wybor = input("Kolejnosc pobierania (1 - Cena: od najniższej, 2 - Cena: od najniższej 3 - Dostępność: od najmniejszej, 4 - Dostępność: od najwiekszej, 5 - Nazwa: A-Z, 6 - Nazwa: Z-A):")
+    if wybor == '1':
+        xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[1]'
+    elif wybor == '2':
+        xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[2]'
+    elif wybor == '3':
+        xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[3]'
+    elif wybor == '4':
+        xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[4]'
+    elif wybor == '5':
+        xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[5]'
+    elif wybor == '6':
+        xpath_sort_by_select = '//select[@id="listSett_ddltMps"]/option[6]'
+    else:
+        continue
+    break
 
 try:
     print('=== START', time.ctime(time.time()))
     # logowanie
     print("Login...")
+    browser = webdriver.Firefox()
+    wait = WebDriverWait(browser, timeout)
+
     browser.get(url_login)
     login_input = browser.find_element_by_xpath(xpath_login_input)
     login_input.send_keys(credentials.login)
@@ -57,25 +92,24 @@ try:
 
     # przygotowywanie strony do parsowania
     print("Searching...")
-    search_season_select = browser.find_element_by_xpath(xpath_search_season_select+'/option[4]')
-    # letnie '/option[1]'
-    # zimowe '/option[2]'
-    # caloroczne '/option[3]'
-    # wszystkie '/option[4]'
+    search_season_select = browser.find_element_by_xpath(xpath_search_season_select)
     search_season_select.click()
 
     search_size_input = browser.find_element_by_xpath(xpath_search_size_input)
     search_size_input.clear()
     # search_size_input.send_keys("205/55R16")
     search_size_input.send_keys(Keys.RETURN)
+
     time.sleep(1)
+
     loader_invisible = wait.until(ec.invisibility_of_element_located((By.XPATH, xpath_loader)))
-    sort_by_size_select = browser.find_element_by_xpath(xpath_sort_by_size_select)
-    sort_by_size_select.click()
-    print("Search success!")
+    sort_by_select = browser.find_element_by_xpath(xpath_sort_by_select)
+    sort_by_select.click()
+
     #results50_per_page_button = browser.find_element_by_xpath(xpath_50results_per_page_button)
     #results50_per_page_button.click()
     #browser.execute_script("arguments[0].click();", results50_per_page_button)
+    print("Search success!")
 
     # przygotowywanie zawartosci
     time.sleep(1)
@@ -177,4 +211,5 @@ except Exception as error:
     # zamykam przegladarke
     browser.quit()
     file.close()
+
 
